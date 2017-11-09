@@ -1,0 +1,53 @@
+create trigger set_sid before insert on student
+for each row begin
+  set @temp_id := ( SELECT AUTO_INCREMENT 
+                    FROM INFORMATION_SCHEMA.TABLES
+                    WHERE TABLE_NAME='student' AND TABLE_SCHEMA=DATABASE() ) ;
+  set new.sid = concat( 's' ,@temp_id );
+end;
+
+
+
+create trigger set_empid before insert on emp
+for each row begin
+  set @temp_id := ( SELECT AUTO_INCREMENT 
+                    FROM INFORMATION_SCHEMA.TABLES
+                    WHERE TABLE_NAME='emp' AND TABLE_SCHEMA=DATABASE() ) ;
+  set new.eid = concat( 'e' ,@temp_id );
+end;
+
+
+
+
+create trigger decrease_capacity after insert on course
+for each row begin 
+	update course_details set capacity = capacity-1 where cid=new.cid;
+	end;
+
+
+
+
+
+
+
+create trigger set_cid before insert on course_details
+for each row begin
+  set @temp_id := ( SELECT AUTO_INCREMENT 
+                    FROM INFORMATION_SCHEMA.TABLES
+                    WHERE TABLE_NAME='course_details' AND TABLE_SCHEMA=DATABASE() ) ;
+	set @temp := (select left(new.course_name,3));
+	set new.end_date = (SELECT DATE_ADD(new.start_date, INTERVAL new.duration DAY));
+  set new.cid = concat( @temp ,@temp_id );
+end;
+
+
+
+
+
+
+
+
+create view studentView as select sid,email,concat(fname,' ',mname,' ',lname) as name,ph_no,gender,address from student;
+
+create view courseView as select sid,course_name,cm.cid,cm.faculty from course cm,course_details cs where cm.cid=cs.cid;
+
